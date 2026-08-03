@@ -1,16 +1,18 @@
 import React from 'react';
 import { usePOS } from '../../context/POSContext';
-import { 
-  BarChart3, 
-  Download, 
-  Receipt, 
-  Calendar, 
-  DollarSign, 
-  TrendingUp, 
-  ArrowUpRight, 
-  Printer 
+import {
+  BarChart3,
+  Download,
+  FileSpreadsheet,
+  Receipt,
+  Calendar,
+  DollarSign,
+  TrendingUp,
+  ArrowUpRight,
+  Printer
 } from 'lucide-react';
 import { MOCK_WEEKLY_SALES } from '../../data/mockData';
+import { exportConsolidatedSalesCsv } from '../../lib/exportCsv';
 
 export const ReportsScreen: React.FC = () => {
   const { salesHistory, activityLogs, setIsReceiptModalOpen } = usePOS();
@@ -32,13 +34,26 @@ export const ReportsScreen: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {/*
+            TODO cuando exista login con roles: "Exportar Balance DIAN" solo debe
+            verlo el rol Administrador. "Exportar Excel Consolidado" lo ven tanto
+            Administrador como Visualizador (es el único botón que le queda a
+            Visualizador, junto con el acceso a Dashboard y Reportes).
+          */}
           <button
             onClick={() => alert('Exportando Reporte Contable en Excel/PDF...')}
             className="px-4 py-2.5 bg-[#2a1a12] hover:bg-gray-800 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-2 cursor-pointer transition-all"
           >
             <Download className="w-4 h-4" />
             <span>Exportar Balance DIAN</span>
+          </button>
+          <button
+            onClick={() => exportConsolidatedSalesCsv(salesHistory)}
+            className="px-4 py-2.5 bg-[#7a0d0a] hover:bg-[#4f0906] text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-2 cursor-pointer transition-all"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Exportar Excel Consolidado</span>
           </button>
         </div>
       </div>
