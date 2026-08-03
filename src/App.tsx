@@ -33,7 +33,7 @@ const AppContent: React.FC = () => {
   }, []);
 
   return (
-    <div className="bg-[#faf3e6] text-[#2a1a12] font-sans overflow-hidden h-screen flex flex-col select-none">
+    <div className="bg-[#faf3e6] text-[#2a1a12] font-sans overflow-hidden h-[100dvh] flex flex-col select-none">
       {/* Top Header */}
       <Header />
 

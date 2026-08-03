@@ -87,8 +87,8 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="flex justify-between items-center w-full px-4 md:px-8 h-16 bg-white border-b border-[#ddc9a3] z-50 shrink-0 shadow-xs">
-      <div className="flex items-center gap-6">
+    <header className="flex justify-between items-center w-full px-3 md:px-8 h-16 bg-white border-b border-[#ddc9a3] z-50 shrink-0 shadow-xs">
+      <div className="flex items-center gap-2 sm:gap-6 shrink-0">
         <h1
           onClick={() => setActiveTab('pos')}
           className="text-xl md:text-2xl font-bold cursor-pointer hover:opacity-90 transition-opacity flex items-baseline whitespace-nowrap"
@@ -97,7 +97,7 @@ export const Header: React.FC = () => {
             <span className="text-[#2a1a12]">Panel de Control</span>
           ) : (
             <>
-              <span className="text-[#2a1a12]">Salsamentaría&nbsp;</span>
+              <span className="hidden sm:inline text-[#2a1a12]">Salsamentaría&nbsp;</span>
               <span className="relative inline-flex items-baseline text-[#7a0d0a]">
                 Saf
                 <span className="relative inline-block text-[#3d3f10]">
@@ -173,12 +173,12 @@ export const Header: React.FC = () => {
                 ? 'Escanear código o buscar producto... [F2]'
                 : 'Buscar productos o ventas...'
             }
-            className="w-full bg-[#f3e7d0] border-2 border-[#ddc9a3] rounded-full py-2.5 pl-12 pr-36 focus:ring-2 focus:ring-[#7a0d0a] focus:border-[#7a0d0a] focus:bg-white transition-all text-sm text-[#2a1a12] outline-none"
+            className="w-full bg-[#f3e7d0] border-2 border-[#ddc9a3] rounded-full py-2.5 pl-12 pr-14 sm:pr-36 focus:ring-2 focus:ring-[#7a0d0a] focus:border-[#7a0d0a] focus:bg-white transition-all text-sm text-[#2a1a12] outline-none"
           />
-          
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+
+          <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
             <span
-              className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-2 sm:px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
                 grameraStatus === 'receiving'
                   ? 'bg-amber-500 text-white animate-pulse'
                   : 'bg-[#7a0d0a] text-white shadow-xs'
@@ -187,12 +187,12 @@ export const Header: React.FC = () => {
               {grameraStatus === 'receiving' ? (
                 <>
                   <WifiOff className="w-3 h-3 animate-spin" />
-                  <span>Leyendo...</span>
+                  <span className="hidden sm:inline">Leyendo...</span>
                 </>
               ) : (
                 <>
                   <Wifi className="w-3 h-3" />
-                  <span>Gramera Conectada</span>
+                  <span className="hidden sm:inline">Gramera Conectada</span>
                 </>
               )}
             </span>
@@ -250,7 +250,7 @@ export const Header: React.FC = () => {
       </div>
 
       {/* Right User Actions */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1 sm:gap-3 shrink-0">
         <button 
           title="Notificaciones de Stock"
           onClick={() => setActiveTab('inventario')}

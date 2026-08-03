@@ -101,7 +101,7 @@ export const POSScreen: React.FC = () => {
   }, 0);
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row bg-[#faf3e6] p-4 gap-4 overflow-hidden">
+    <div className="flex-1 flex flex-col md:flex-row bg-[#faf3e6] p-4 gap-4 overflow-y-auto md:overflow-hidden">
       {/* Left Side: Cart and Favorites */}
       <div className="flex-1 flex flex-col gap-4 min-w-0 overflow-hidden">
         {/* Quick Access Favorites (Bento Style from screenshot) */}
