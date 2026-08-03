@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { usePOS } from '../../context/POSContext';
 import {
   BarChart3,
@@ -13,15 +13,42 @@ import {
 } from 'lucide-react';
 import { MOCK_WEEKLY_SALES } from '../../data/mockData';
 import { exportConsolidatedSalesCsv } from '../../lib/exportCsv';
+import { PeriodFilterBar, toDateInputValue } from '../shared/PeriodFilterBar';
+import { PeriodType, getPeriodRange, filterSalesInRange } from '../../lib/salesAnalytics';
+
+const formatShortDate = (d: Date) =>
+  d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
 
 export const ReportsScreen: React.FC = () => {
-  const { salesHistory, activityLogs, setIsReceiptModalOpen } = usePOS();
+  const { salesHistory, setIsReceiptModalOpen } = usePOS();
 
   const totalWeeklyActual = MOCK_WEEKLY_SALES.reduce((acc, d) => acc + d.actual, 0);
   const totalWeeklyPrevious = MOCK_WEEKLY_SALES.reduce((acc, d) => acc + d.previous, 0);
   const weeklyGrowth = Math.round(
     ((totalWeeklyActual - totalWeeklyPrevious) / totalWeeklyPrevious) * 100
   );
+
+  // --- Filtro Día / Mes / Año / Rango, enlazado con la tabla y con la exportación ---
+  const [periodType, setPeriodType] = useState<PeriodType>('dia');
+  const defaultRangeStart = useMemo(() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() - 3);
+    return toDateInputValue(d);
+  }, []);
+  const [rangeStart, setRangeStart] = useState(defaultRangeStart);
+  const [rangeEnd, setRangeEnd] = useState(toDateInputValue(new Date()));
+
+  const periodRange = useMemo(
+    () => getPeriodRange(periodType, rangeStart, rangeEnd),
+    [periodType, rangeStart, rangeEnd]
+  );
+
+  const periodSales = useMemo(
+    () => filterSalesInRange(salesHistory, periodRange.start, periodRange.end),
+    [salesHistory, periodRange]
+  );
+
+  const periodRangeLabel = `${formatShortDate(periodRange.start)} — ${formatShortDate(new Date(periodRange.end.getTime() - 1))}`;
 
   return (
     <div className="flex-1 p-6 lg:p-8 flex flex-col gap-6 overflow-y-auto bg-[#faf3e6]">
@@ -49,14 +76,26 @@ export const ReportsScreen: React.FC = () => {
             <span>Exportar Balance DIAN</span>
           </button>
           <button
-            onClick={() => exportConsolidatedSalesCsv(salesHistory)}
-            className="px-4 py-2.5 bg-[#7a0d0a] hover:bg-[#4f0906] text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-2 cursor-pointer transition-all"
+            onClick={() => exportConsolidatedSalesCsv(periodSales)}
+            disabled={periodSales.length === 0}
+            className="px-4 py-2.5 bg-[#7a0d0a] hover:bg-[#4f0906] text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-2 cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <FileSpreadsheet className="w-4 h-4" />
             <span>Exportar Excel Consolidado</span>
           </button>
         </div>
       </div>
+
+      {/* FILTRO: Día / Mes / Año / Rango — enlazado con la tabla y la exportación */}
+      <PeriodFilterBar
+        label="Ver reporte por:"
+        periodType={periodType}
+        onPeriodTypeChange={setPeriodType}
+        rangeStart={rangeStart}
+        onRangeStartChange={setRangeStart}
+        rangeEnd={rangeEnd}
+        onRangeEndChange={setRangeEnd}
+      />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -115,12 +154,10 @@ export const ReportsScreen: React.FC = () => {
             <h3 className="text-lg font-bold text-[#2a1a12]">
               Historial de Tickets Emitidos
             </h3>
-            <p className="text-xs text-[#7a6552]">
-              Registro detallado de transacciones recientes de mostrador
-            </p>
+            <p className="text-xs text-[#7a6552]">{periodRangeLabel}</p>
           </div>
           <span className="text-xs bg-[#efe1c4] text-[#2a1a12] font-bold px-3 py-1 rounded-full">
-            {salesHistory.length} nuevos hoy
+            {periodSales.length} {periodSales.length === 1 ? 'ticket' : 'tickets'} en el período
           </span>
         </div>
 
@@ -129,6 +166,7 @@ export const ReportsScreen: React.FC = () => {
             <thead className="bg-[#faf6ee] border-b border-[#ddc9a3]">
               <tr>
                 <th className="px-6 py-3 text-xs font-bold text-[#7a6552] uppercase">Ticket N°</th>
+                <th className="px-6 py-3 text-xs font-bold text-[#7a6552] uppercase">Fecha</th>
                 <th className="px-6 py-3 text-xs font-bold text-[#7a6552] uppercase">Hora</th>
                 <th className="px-6 py-3 text-xs font-bold text-[#7a6552] uppercase">Cliente</th>
                 <th className="px-6 py-3 text-xs font-bold text-[#7a6552] uppercase">Método Pago</th>
@@ -137,10 +175,20 @@ export const ReportsScreen: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#efe1c4]">
-              {salesHistory.map((s) => (
+              {periodSales.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-6 py-10 text-center text-sm text-[#7a6552]">
+                    No hay tickets emitidos en este período.
+                  </td>
+                </tr>
+              )}
+              {periodSales.map((s) => (
                 <tr key={s.id} className="hover:bg-[#faf6ee]">
                   <td className="px-6 py-4 font-mono font-bold text-[#7a0d0a] text-sm">
                     {s.receiptNumber}
+                  </td>
+                  <td className="px-6 py-4 text-xs text-gray-500">
+                    {new Date(s.timestamp).toLocaleDateString('es-CO')}
                   </td>
                   <td className="px-6 py-4 text-xs text-gray-500">
                     {new Date(s.timestamp).toLocaleTimeString('es-CO')}
@@ -161,35 +209,6 @@ export const ReportsScreen: React.FC = () => {
                       onClick={() => setIsReceiptModalOpen(true)}
                       className="p-1.5 text-gray-500 hover:text-[#7a0d0a] rounded-lg hover:bg-[#f5e2da] cursor-pointer"
                       title="Imprimir ticket"
-                    >
-                      <Printer className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {/* Show preset activity logs if few sales */}
-              {activityLogs.map((log, index) => (
-                <tr key={log.id} className="hover:bg-[#faf6ee]">
-                  <td className="px-6 py-4 font-mono font-bold text-gray-500 text-sm">
-                    TICK-802{index}1
-                  </td>
-                  <td className="px-6 py-4 text-xs text-gray-500">{log.timeAgo}</td>
-                  <td className="px-6 py-4 text-sm font-bold text-[#2a1a12]">
-                    {log.productName}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-xs uppercase bg-[#efe1c4] text-[#2a1a12] px-2.5 py-1 rounded-lg font-bold">
-                      Efectivo
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right font-bold text-sm text-[#2a1a12]">
-                    ${log.amount.toLocaleString('es-CO')}
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => alert(`Reimprimiendo ticket histórico TICK-802${index}1...`)}
-                      className="p-1.5 text-gray-500 hover:text-[#7a0d0a] rounded-lg hover:bg-[#f5e2da] cursor-pointer"
                     >
                       <Printer className="w-4 h-4" />
                     </button>
