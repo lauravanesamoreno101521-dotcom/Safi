@@ -3,17 +3,19 @@ import { usePOS } from '../../context/POSContext';
 import { Search, Barcode, Bell, Settings, Wifi, WifiOff } from 'lucide-react';
 
 export const Header: React.FC = () => {
-  const { 
-    activeTab, 
-    setActiveTab, 
-    searchQuery, 
-    setSearchQuery, 
-    products, 
-    addToCart, 
-    grameraStatus 
+  const {
+    activeTab,
+    setActiveTab,
+    searchQuery,
+    setSearchQuery,
+    products,
+    addToCart,
+    openGrameraForProduct,
+    grameraStatus
   } = usePOS();
-  
+
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [scanFeedback, setScanFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // F2 key shortcut to focus barcode scanner input (as in screenshot script)
@@ -27,6 +29,48 @@ export const Header: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Un lector de código de barras funciona como un teclado: "escribe" el
+  // código muy rápido y termina con Enter. Por eso basta con mantener este
+  // campo enfocado mientras se está en Punto de Venta (sin necesidad de
+  // ningún driver ni configuración especial) para que el escaneo funcione
+  // en cuanto se conecte un lector físico. Mientras tanto, escribir el
+  // código o SKU a mano y presionar Enter hace exactamente lo mismo.
+  useEffect(() => {
+    if (activeTab === 'pos') {
+      searchInputRef.current?.focus();
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!scanFeedback) return;
+    const timer = setTimeout(() => setScanFeedback(null), 2200);
+    return () => clearTimeout(timer);
+  }, [scanFeedback]);
+
+  const handleBarcodeKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+    const code = searchQuery.trim();
+    if (!code) return;
+
+    const found = products.find(p => p.code.toLowerCase() === code.toLowerCase());
+
+    if (found) {
+      if (found.isWeightBased) {
+        openGrameraForProduct(found);
+      } else {
+        addToCart(found);
+      }
+      setScanFeedback({ type: 'success', message: `Agregado: ${found.name}` });
+    } else {
+      setScanFeedback({ type: 'error', message: `Código no encontrado: "${code}"` });
+    }
+
+    setSearchQuery('');
+    setIsSearchFocused(false);
+    // Deja el campo listo para el siguiente escaneo/código
+    requestAnimationFrame(() => searchInputRef.current?.focus());
+  };
 
   const filteredProducts = searchQuery.trim() === ''
     ? []
@@ -56,16 +100,6 @@ export const Header: React.FC = () => {
         <div className="hidden md:flex gap-1">
           <nav className="flex gap-2">
             <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`font-medium text-sm px-3 py-2 rounded-lg transition-colors cursor-pointer ${
-                activeTab === 'dashboard'
-                  ? 'text-[#9f3023] font-bold border-b-2 border-[#9f3023] bg-[#fff2f0]'
-                  : 'text-[#586062] hover:bg-[#dae1e3]/40'
-              }`}
-            >
-              Dashboard
-            </button>
-            <button
               onClick={() => setActiveTab('pos')}
               className={`font-medium text-sm px-3 py-2 rounded-lg transition-colors cursor-pointer ${
                 activeTab === 'pos'
@@ -84,6 +118,16 @@ export const Header: React.FC = () => {
               }`}
             >
               Inventario
+            </button>
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`font-medium text-sm px-3 py-2 rounded-lg transition-colors cursor-pointer ${
+                activeTab === 'dashboard'
+                  ? 'text-[#9f3023] font-bold border-b-2 border-[#9f3023] bg-[#fff2f0]'
+                  : 'text-[#586062] hover:bg-[#dae1e3]/40'
+              }`}
+            >
+              Dashboard
             </button>
           </nav>
         </div>
@@ -106,6 +150,7 @@ export const Header: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+            onKeyDown={handleBarcodeKeyDown}
             placeholder={
               activeTab === 'pos'
                 ? 'Escanear código o buscar producto... [F2]'
@@ -169,6 +214,19 @@ export const Header: React.FC = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Aviso de resultado al escanear/ingresar un código y presionar Enter */}
+          {scanFeedback && (
+            <div
+              className={`absolute left-0 right-0 top-full mt-2 px-4 py-2.5 rounded-xl text-xs font-bold z-50 border ${
+                scanFeedback.type === 'success'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-[#ffdad6] text-[#9f3023] border-[#9f3023]/30'
+              }`}
+            >
+              {scanFeedback.message}
             </div>
           )}
         </div>

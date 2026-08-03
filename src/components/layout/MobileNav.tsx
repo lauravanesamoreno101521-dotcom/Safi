@@ -8,11 +8,6 @@ export const MobileNav: React.FC = () => {
 
   const navItems: { id: TabType; label: string; icon: React.ReactNode }[] = [
     {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: <LayoutDashboard className="w-5 h-5" />
-    },
-    {
       id: 'pos',
       label: 'POS',
       icon: <Barcode className="w-5 h-5" />
@@ -21,6 +16,11 @@ export const MobileNav: React.FC = () => {
       id: 'inventario',
       label: 'Inventario',
       icon: <Package className="w-5 h-5" />
+    },
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: <LayoutDashboard className="w-5 h-5" />
     },
     {
       id: 'reportes',
