@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --primary: #9f3023;
+    --primary-hover: #881f14;
+    --primary-light: #c04838;
+    --primary-bg: #fff2f0;
+    --slate-dark: #131d21;
+    --slate-inverse: #283236;
+    --surface-bg: #f8fafb;
+    --surface-card: #ffffff;
+    --border-color: #dfbfba;
+  }
+}
+
+/* Custom scrollbar matching salsamentaría design */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #dfbfba;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8b716d;
+}
+
+/* Animations */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+

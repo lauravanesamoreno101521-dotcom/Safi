@@ -1,0 +1,63 @@
+export type TabType = 'dashboard' | 'pos' | 'inventario' | 'reportes' | 'proveedores';
+
+export type PricingUnit = 'kg' | 'unid' | 'gramo';
+
+export interface Product {
+  id: string;
+  code: string;
+  name: string;
+  category: 'jamones_embutidos' | 'quesos' | 'panaderia_gourmet' | 'vinos_licores' | 'abarrotes' | 'huevos_lacteos';
+  price: number; // Precio por kg o unidad según unit
+  unit: PricingUnit;
+  stock: number; // En kg o unidades
+  minStock: number;
+  imageUrl: string;
+  isFavorite?: boolean;
+  description?: string;
+  isWeightBased: boolean;
+}
+
+export interface CartItem {
+  product: Product;
+  quantity: number; // Si es 'kg', representa kg (ej. 0.345 kg = 345g), si es 'unid', representa unidades
+  subtotal: number;
+}
+
+export type PaymentMethodType = 'efectivo' | 'tarjeta' | 'transferencia';
+
+export interface Customer {
+  id: string;
+  name: string;
+  document: string; // NIT o CC
+  phone?: string;
+  type: 'general' | 'empresa' | 'frecuente';
+}
+
+export interface Sale {
+  id: string;
+  receiptNumber: string;
+  timestamp: Date;
+  items: CartItem[];
+  subtotal: number;
+  tax: number; // 19% IVA
+  total: number;
+  paymentMethod: PaymentMethodType;
+  cashReceived?: number;
+  change?: number;
+  customer?: Customer;
+  cashierName: string;
+}
+
+export interface ActivityLogItem {
+  id: string;
+  productName: string;
+  quantityStr: string;
+  amount: number;
+  timeAgo: string;
+}
+
+export interface WeeklySalesData {
+  day: 'Lun' | 'Mar' | 'Mie' | 'Jue' | 'Vie' | 'Sab' | 'Dom';
+  actual: number;
+  previous: number;
+}

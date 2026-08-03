@@ -1,0 +1,6 @@
+{
+  "name": "Salsamentaría Pro",
+  "description": "Sistema de Punto de Venta (POS) y Gestión de Salsamentaría con soporte para gramera conectada, inventario y dashboard de ventas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
