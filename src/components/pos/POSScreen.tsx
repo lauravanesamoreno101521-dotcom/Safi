@@ -300,7 +300,7 @@ export const POSScreen: React.FC = () => {
       </div>
 
       {/* Right Side: Summary and Checkout */}
-      <div className="w-full md:w-96 flex flex-col gap-4 shrink-0">
+      <div className="w-full md:w-96 flex flex-col gap-4 shrink-0 overflow-y-auto pr-1 -mr-1">
         {/* Summary Card (Dark Slate matching screenshot) */}
         <section className="bg-[#33210f] text-white rounded-2xl shadow-lg p-6 flex flex-col gap-6">
           <div>
