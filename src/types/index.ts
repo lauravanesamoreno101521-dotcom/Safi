@@ -1,4 +1,4 @@
-export type TabType = 'dashboard' | 'pos' | 'inventario' | 'reportes' | 'proveedores';
+export type TabType = 'dashboard' | 'pos' | 'inventario' | 'reportes' | 'clientes' | 'proveedores';
 
 export type PricingUnit = 'kg' | 'unid' | 'gramo';
 

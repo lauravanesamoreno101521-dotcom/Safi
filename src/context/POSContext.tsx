@@ -8,11 +8,12 @@ import {
   ActivityLogItem, 
   TabType 
 } from '../types';
-import { 
-  INITIAL_PRODUCTS, 
-  MOCK_CUSTOMERS, 
-  MOCK_ACTIVITY_LOGS, 
-  MOCK_WEEKLY_SALES 
+import {
+  INITIAL_PRODUCTS,
+  MOCK_CUSTOMERS,
+  MOCK_ACTIVITY_LOGS,
+  MOCK_WEEKLY_SALES,
+  MOCK_SALES_HISTORY
 } from '../data/mockData';
 
 interface POSContextType {
@@ -35,6 +36,8 @@ interface POSContextType {
   change: number;
   selectedCustomer: Customer | null;
   setSelectedCustomer: (cust: Customer | null) => void;
+  customers: Customer[];
+  addCustomer: (customer: Customer) => void;
   completeSale: () => Sale;
   salesHistory: Sale[];
   activityLogs: ActivityLogItem[];
@@ -87,7 +90,8 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('efectivo');
   const [cashReceived, setCashReceived] = useState<number>(50000);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [salesHistory, setSalesHistory] = useState<Sale[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
+  const [salesHistory, setSalesHistory] = useState<Sale[]>(MOCK_SALES_HISTORY);
   const [activityLogs, setActivityLogs] = useState<ActivityLogItem[]>(MOCK_ACTIVITY_LOGS);
   const [searchQuery, setSearchQuery] = useState<string>('');
   
@@ -261,6 +265,16 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     alert(`Cotización generada por valor de $${total.toLocaleString('es-CO')} COP. Puedes imprimirla en formato PDF.`);
   };
 
+  const addCustomer = (customer: Customer) => {
+    // Cada vez que se registra un cliente nuevo desde el modal de "Asignar Cliente"
+    // en el POS, queda guardado aquí de forma permanente (mientras no esté conectado
+    // a Supabase, dura la sesión) para alimentar el ranking en la pantalla Clientes.
+    setCustomers(prev => {
+      if (prev.some(c => c.id === customer.id)) return prev;
+      return [customer, ...prev];
+    });
+  };
+
   const addProduct = (newProd: Product) => {
     setProducts(prev => [newProd, ...prev]);
   };
@@ -291,6 +305,8 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         change,
         selectedCustomer,
         setSelectedCustomer,
+        customers,
+        addCustomer,
         completeSale,
         salesHistory,
         activityLogs,

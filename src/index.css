@@ -2,15 +2,15 @@
 
 @layer base {
   :root {
-    --primary: #9f3023;
-    --primary-hover: #881f14;
-    --primary-light: #c04838;
-    --primary-bg: #fff2f0;
-    --slate-dark: #131d21;
-    --slate-inverse: #283236;
-    --surface-bg: #f8fafb;
+    --primary: #7a0d0a;
+    --primary-hover: #4f0906;
+    --primary-light: #a83a2c;
+    --primary-bg: #f5e2da;
+    --slate-dark: #2a1a12;
+    --slate-inverse: #33210f;
+    --surface-bg: #faf6ee;
     --surface-card: #ffffff;
-    --border-color: #dfbfba;
+    --border-color: #ddc9a3;
   }
 }
 
@@ -25,12 +25,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #dfbfba;
+  background: #ddc9a3;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #8b716d;
+  background: #8a6f52;
 }
 
 /* Animations */

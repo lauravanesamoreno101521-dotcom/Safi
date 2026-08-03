@@ -30,7 +30,7 @@ export const MobileNav: React.FC = () => {
   ];
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#eaf5fa] flex justify-around items-center border-t border-[#dfbfba] z-50 shadow-lg">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#f3e7d0] flex justify-around items-center border-t border-[#ddc9a3] z-50 shadow-lg">
       {navItems.map((item) => {
         const isActive = activeTab === item.id;
         return (
@@ -38,7 +38,7 @@ export const MobileNav: React.FC = () => {
             key={item.id}
             onClick={() => setActiveTab(item.id)}
             className={`flex flex-col items-center gap-1 cursor-pointer py-1 px-3 rounded-lg transition-colors ${
-              isActive ? 'text-[#9f3023] font-bold' : 'text-[#586062]'
+              isActive ? 'text-[#7a0d0a] font-bold' : 'text-[#7a6552]'
             }`}
           >
             {item.icon}

@@ -9,6 +9,7 @@ import { DashboardScreen } from './components/dashboard/DashboardScreen';
 import { InventoryScreen } from './components/inventory/InventoryScreen';
 import { ReportsScreen } from './components/reports/ReportsScreen';
 import { SuppliersScreen } from './components/suppliers/SuppliersScreen';
+import { ClientsScreen } from './components/clients/ClientsScreen';
 import { CustomerModal } from './components/modals/CustomerModal';
 import { GrameraModal } from './components/modals/GrameraModal';
 import { ReceiptModal } from './components/modals/ReceiptModal';
@@ -32,7 +33,7 @@ const AppContent: React.FC = () => {
   }, []);
 
   return (
-    <div className="bg-[#f1fbff] text-[#131d21] font-sans overflow-hidden h-screen flex flex-col select-none">
+    <div className="bg-[#faf3e6] text-[#2a1a12] font-sans overflow-hidden h-screen flex flex-col select-none">
       {/* Top Header */}
       <Header />
 
@@ -47,6 +48,7 @@ const AppContent: React.FC = () => {
           {activeTab === 'dashboard' && <DashboardScreen />}
           {activeTab === 'inventario' && <InventoryScreen />}
           {activeTab === 'reportes' && <ReportsScreen />}
+          {activeTab === 'clientes' && <ClientsScreen />}
           {activeTab === 'proveedores' && <SuppliersScreen />}
         </main>
       </div>

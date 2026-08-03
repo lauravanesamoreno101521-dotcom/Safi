@@ -1,4 +1,4 @@
-import { Product, ActivityLogItem, WeeklySalesData, Customer } from '../types';
+import { Product, ActivityLogItem, WeeklySalesData, Customer, Sale, CartItem, PaymentMethodType } from '../types';
 
 export const INITIAL_PRODUCTS: Product[] = [
   {
@@ -235,6 +235,92 @@ export const MOCK_WEEKLY_SALES: WeeklySalesData[] = [
   { day: 'Sab', actual: 4420000, previous: 3950000 },
   { day: 'Dom', actual: 2100000, previous: 1450000 }
 ];
+
+// --- Historial de ventas de ejemplo (~5 meses) ---
+// Sirve para que el filtro de Día/Mes/Año/Rango del Dashboard tenga datos
+// reales con qué trabajar desde ya. Cuando la app se conecte a las ventas
+// reales guardadas en Supabase, esto se reemplaza por la consulta real y
+// las ventas que se completen en la sesión seguirán sumándose igual.
+function mulberry32(seed: number) {
+  let state = seed;
+  return function random() {
+    state |= 0;
+    state = (state + 0x6d2b79f5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function generateMockSalesHistory(): Sale[] {
+  const rand = mulberry32(20260803);
+  const sales: Sale[] = [];
+  const paymentMethods: PaymentMethodType[] = ['efectivo', 'tarjeta', 'transferencia'];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let saleCounter = 1;
+  const daysBack = 150;
+
+  for (let d = daysBack; d >= 1; d--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - d);
+    const dayOfWeek = date.getDay(); // 0 = domingo, 6 = sábado
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    const salesToday = Math.floor(rand() * (isWeekend ? 6 : 4)) + (isWeekend ? 2 : 1);
+
+    for (let s = 0; s < salesToday; s++) {
+      const itemCount = Math.floor(rand() * 3) + 1;
+      const items: CartItem[] = [];
+      const usedIds = new Set<string>();
+
+      for (let i = 0; i < itemCount; i++) {
+        const product = INITIAL_PRODUCTS[Math.floor(rand() * INITIAL_PRODUCTS.length)];
+        if (usedIds.has(product.id)) continue;
+        usedIds.add(product.id);
+
+        const quantity = product.unit === 'kg'
+          ? Number((0.15 + rand() * 1.2).toFixed(3))
+          : Math.floor(rand() * 3) + 1;
+        const subtotal = Math.round(quantity * product.price);
+        items.push({ product, quantity, subtotal });
+      }
+
+      if (items.length === 0) continue;
+
+      const subtotal = items.reduce((acc, it) => acc + it.subtotal, 0);
+      const tax = Math.round(subtotal * 0.19);
+      const total = subtotal + tax;
+      const timestamp = new Date(date);
+      timestamp.setHours(8 + Math.floor(rand() * 11), Math.floor(rand() * 60), 0, 0);
+
+      // ~55% de las ventas quedan asociadas a un cliente registrado (el resto
+      // son ventas de mostrador sin cliente asignado), para que el ranking de
+      // clientes frecuentes tenga datos reales con qué trabajar desde ya.
+      const customer = rand() < 0.55
+        ? MOCK_CUSTOMERS[Math.floor(rand() * MOCK_CUSTOMERS.length)]
+        : undefined;
+
+      sales.push({
+        id: `hist-sale-${saleCounter}`,
+        receiptNumber: `TICK-${100000 + saleCounter}`,
+        timestamp,
+        items,
+        subtotal,
+        tax,
+        total,
+        paymentMethod: paymentMethods[Math.floor(rand() * paymentMethods.length)],
+        customer,
+        cashierName: 'Admin Salsamentaría'
+      });
+      saleCounter++;
+    }
+  }
+
+  return sales.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+}
+
+export const MOCK_SALES_HISTORY: Sale[] = generateMockSalesHistory();
 
 export const MOCK_SUPPLIERS = [
   {

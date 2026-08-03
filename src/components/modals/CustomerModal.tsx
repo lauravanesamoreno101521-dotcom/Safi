@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { usePOS } from '../../context/POSContext';
-import { MOCK_CUSTOMERS } from '../../data/mockData';
 import { Customer } from '../../types';
 import { X, UserPlus, Check, Building2, User, Award } from 'lucide-react';
 
 export const CustomerModal: React.FC = () => {
-  const { 
-    isCustomerModalOpen, 
-    setIsCustomerModalOpen, 
-    selectedCustomer, 
-    setSelectedCustomer 
+  const {
+    isCustomerModalOpen,
+    setIsCustomerModalOpen,
+    selectedCustomer,
+    setSelectedCustomer,
+    customers,
+    addCustomer
   } = usePOS();
 
   const [search, setSearch] = useState('');
@@ -23,7 +24,7 @@ export const CustomerModal: React.FC = () => {
 
   if (!isCustomerModalOpen) return null;
 
-  const filtered = MOCK_CUSTOMERS.filter(c =>
+  const filtered = customers.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.document.includes(search)
   );
@@ -38,6 +39,7 @@ export const CustomerModal: React.FC = () => {
       phone: newCustomer.phone,
       type: newCustomer.type
     };
+    addCustomer(created);
     setSelectedCustomer(created);
     setIsCustomerModalOpen(false);
     setIsCreating(false);
@@ -45,12 +47,12 @@ export const CustomerModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-[#dfbfba] overflow-hidden flex flex-col max-h-[85vh]">
+      <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-[#ddc9a3] overflow-hidden flex flex-col max-h-[85vh]">
         {/* Header */}
-        <div className="px-6 py-4 bg-[#eaf5fa] border-b border-[#dfbfba] flex items-center justify-between">
+        <div className="px-6 py-4 bg-[#f3e7d0] border-b border-[#ddc9a3] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-[#9f3023]" />
-            <h3 className="font-bold text-lg text-[#131d21]">Asignar Cliente a Ticket</h3>
+            <UserPlus className="w-5 h-5 text-[#7a0d0a]" />
+            <h3 className="font-bold text-lg text-[#2a1a12]">Asignar Cliente a Ticket</h3>
           </div>
           <button
             onClick={() => setIsCustomerModalOpen(false)}
@@ -70,15 +72,15 @@ export const CustomerModal: React.FC = () => {
                   placeholder="Buscar por nombre, NIT o cédula..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full px-4 py-3 bg-[#f1fbff] border border-[#dfbfba] rounded-xl text-sm focus:ring-2 focus:ring-[#9f3023] outline-none"
+                  className="w-full px-4 py-3 bg-[#faf3e6] border border-[#ddc9a3] rounded-xl text-sm focus:ring-2 focus:ring-[#7a0d0a] outline-none"
                 />
               </div>
 
               {selectedCustomer && (
-                <div className="p-3 bg-[#fff2f0] border border-[#9f3023] rounded-xl flex items-center justify-between">
+                <div className="p-3 bg-[#f5e2da] border border-[#7a0d0a] rounded-xl flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-[#9f3023] uppercase">Cliente actualmente asignado:</span>
-                    <p className="font-bold text-sm text-[#131d21]">{selectedCustomer.name}</p>
+                    <span className="text-xs font-bold text-[#7a0d0a] uppercase">Cliente actualmente asignado:</span>
+                    <p className="font-bold text-sm text-[#2a1a12]">{selectedCustomer.name}</p>
                     <p className="text-xs text-gray-600">NIT/CC: {selectedCustomer.document}</p>
                   </div>
                   <button
@@ -103,12 +105,12 @@ export const CustomerModal: React.FC = () => {
                       }}
                       className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
                         isSelected
-                          ? 'border-[#9f3023] bg-[#fff2f0]'
-                          : 'border-[#dfbfba] hover:bg-[#eaf5fa]'
+                          ? 'border-[#7a0d0a] bg-[#f5e2da]'
+                          : 'border-[#ddc9a3] hover:bg-[#f3e7d0]'
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-white border border-[#dfbfba] flex items-center justify-center text-[#9f3023]">
+                        <div className="w-9 h-9 rounded-lg bg-white border border-[#ddc9a3] flex items-center justify-center text-[#7a0d0a]">
                           {cust.type === 'empresa' ? (
                             <Building2 className="w-5 h-5" />
                           ) : cust.type === 'frecuente' ? (
@@ -118,13 +120,13 @@ export const CustomerModal: React.FC = () => {
                           )}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-[#131d21]">{cust.name}</p>
+                          <p className="text-sm font-bold text-[#2a1a12]">{cust.name}</p>
                           <p className="text-xs text-gray-500">
                             NIT/CC: {cust.document} {cust.phone && `• ${cust.phone}`}
                           </p>
                         </div>
                       </div>
-                      {isSelected && <Check className="w-5 h-5 text-[#9f3023]" />}
+                      {isSelected && <Check className="w-5 h-5 text-[#7a0d0a]" />}
                     </div>
                   );
                 })}
@@ -134,7 +136,7 @@ export const CustomerModal: React.FC = () => {
                 <span className="text-xs text-gray-500">¿El cliente no está registrado?</span>
                 <button
                   onClick={() => setIsCreating(true)}
-                  className="px-4 py-2 bg-[#131d21] text-white rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors"
+                  className="px-4 py-2 bg-[#2a1a12] text-white rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors"
                 >
                   + Crear Nuevo Cliente
                 </button>
@@ -143,11 +145,11 @@ export const CustomerModal: React.FC = () => {
           ) : (
             <form onSubmit={handleCreateNew} className="space-y-4">
               <div className="flex justify-between items-center border-b pb-2">
-                <span className="text-sm font-bold text-[#131d21]">Nuevo Registro de Cliente</span>
+                <span className="text-sm font-bold text-[#2a1a12]">Nuevo Registro de Cliente</span>
                 <button
                   type="button"
                   onClick={() => setIsCreating(false)}
-                  className="text-xs text-[#9f3023] underline font-bold"
+                  className="text-xs text-[#7a0d0a] underline font-bold"
                 >
                   ← Volver a lista
                 </button>
@@ -160,7 +162,7 @@ export const CustomerModal: React.FC = () => {
                   placeholder="Ej. Restaurante Gourmet S.A.S"
                   value={newCustomer.name}
                   onChange={e => setNewCustomer({ ...newCustomer, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-[#dfbfba] rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-[#ddc9a3] rounded-lg text-sm"
                 />
               </div>
               <div>
@@ -171,7 +173,7 @@ export const CustomerModal: React.FC = () => {
                   placeholder="Ej. 900.412.332-1"
                   value={newCustomer.document}
                   onChange={e => setNewCustomer({ ...newCustomer, document: e.target.value })}
-                  className="w-full px-3 py-2 border border-[#dfbfba] rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-[#ddc9a3] rounded-lg text-sm"
                 />
               </div>
               <div>
@@ -181,7 +183,7 @@ export const CustomerModal: React.FC = () => {
                   placeholder="Ej. 310 458 9021"
                   value={newCustomer.phone}
                   onChange={e => setNewCustomer({ ...newCustomer, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-[#dfbfba] rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-[#ddc9a3] rounded-lg text-sm"
                 />
               </div>
               <div>
@@ -189,7 +191,7 @@ export const CustomerModal: React.FC = () => {
                 <select
                   value={newCustomer.type}
                   onChange={e => setNewCustomer({ ...newCustomer, type: e.target.value as any })}
-                  className="w-full px-3 py-2 border border-[#dfbfba] rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-[#ddc9a3] rounded-lg text-sm"
                 >
                   <option value="general">Cliente General / Mostrador</option>
                   <option value="empresa">Empresa / Restaurante (Factura Electrónica)</option>
@@ -198,7 +200,7 @@ export const CustomerModal: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="w-full py-3 bg-[#9f3023] text-white font-bold rounded-xl text-sm shadow-md hover:bg-[#881f14]"
+                className="w-full py-3 bg-[#7a0d0a] text-white font-bold rounded-xl text-sm shadow-md hover:bg-[#4f0906]"
               >
                 Guardar y Asignar a Venta
               </button>

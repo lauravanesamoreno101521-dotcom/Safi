@@ -78,11 +78,11 @@ export const GrameraModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-[#dfbfba] overflow-hidden">
+      <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-[#ddc9a3] overflow-hidden">
         {/* Top bar */}
-        <div className="bg-[#131d21] text-white p-5 flex items-center justify-between">
+        <div className="bg-[#2a1a12] text-white p-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#9f3023] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[#7a0d0a] flex items-center justify-center">
               <Scale className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -100,25 +100,25 @@ export const GrameraModal: React.FC = () => {
 
         {/* Product display */}
         <div className="p-6 space-y-6">
-          <div className="flex items-center gap-4 p-3 bg-[#f8fafb] rounded-2xl border border-[#dfbfba]">
+          <div className="flex items-center gap-4 p-3 bg-[#faf6ee] rounded-2xl border border-[#ddc9a3]">
             <img
               src={weighingProduct.imageUrl}
               alt={weighingProduct.name}
               className="w-14 h-14 rounded-xl object-cover"
             />
             <div>
-              <p className="font-bold text-[#131d21]">{weighingProduct.name}</p>
+              <p className="font-bold text-[#2a1a12]">{weighingProduct.name}</p>
               <p className="text-xs text-gray-500">
-                Precio base: <span className="font-bold text-[#9f3023]">${weighingProduct.price.toLocaleString('es-CO')} / Kg</span>
+                Precio base: <span className="font-bold text-[#7a0d0a]">${weighingProduct.price.toLocaleString('es-CO')} / Kg</span>
               </p>
             </div>
           </div>
 
           {/* Conexión a báscula real (Web Serial API) */}
-          <div className="rounded-2xl border border-dashed border-[#dfbfba] p-3 flex items-center justify-between gap-3 bg-[#f8fafb] flex-wrap">
+          <div className="rounded-2xl border border-dashed border-[#ddc9a3] p-3 flex items-center justify-between gap-3 bg-[#faf6ee] flex-wrap">
             <div className="flex items-center gap-2 text-xs">
               {realStatus === 'connected' ? (
-                <span className="flex items-center gap-1.5 text-emerald-600 font-bold">
+                <span className="flex items-center gap-1.5 text-[#5c6b1f] font-bold">
                   <Usb className="w-4 h-4" /> Báscula real conectada
                 </span>
               ) : realStatus === 'connecting' ? (
@@ -133,7 +133,7 @@ export const GrameraModal: React.FC = () => {
               <button
                 type="button"
                 onClick={disconnectReal}
-                className="text-xs font-bold text-[#9f3023] hover:underline cursor-pointer"
+                className="text-xs font-bold text-[#7a0d0a] hover:underline cursor-pointer"
               >
                 Desconectar
               </button>
@@ -143,7 +143,7 @@ export const GrameraModal: React.FC = () => {
                 onClick={handleConnectRealScale}
                 disabled={realStatus === 'connecting' || !isWebSerialSupported()}
                 title={!isWebSerialSupported() ? 'Tu navegador no soporta conexión directa. Usa Chrome o Edge en un computador.' : undefined}
-                className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg border border-[#9f3023] text-[#9f3023] hover:bg-[#9f3023] hover:text-white transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#9f3023] cursor-pointer"
+                className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg border border-[#7a0d0a] text-[#7a0d0a] hover:bg-[#7a0d0a] hover:text-white transition-all disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#7a0d0a] cursor-pointer"
               >
                 <Usb className="w-3.5 h-3.5" />
                 Conectar báscula real (USB)
@@ -184,8 +184,8 @@ export const GrameraModal: React.FC = () => {
                   onClick={() => setCustomWeightGrams(grams)}
                   className={`py-2 rounded-xl border text-xs font-bold transition-all ${
                     customWeightGrams === grams
-                      ? 'bg-[#9f3023] text-white border-[#9f3023] shadow-xs'
-                      : 'bg-white text-[#131d21] border-[#dfbfba] hover:bg-[#fff2f0]'
+                      ? 'bg-[#7a0d0a] text-white border-[#7a0d0a] shadow-xs'
+                      : 'bg-white text-[#2a1a12] border-[#ddc9a3] hover:bg-[#f5e2da]'
                   }`}
                 >
                   {grams}g ({grams / 1000} kg)
@@ -198,7 +198,7 @@ export const GrameraModal: React.FC = () => {
           <div className="space-y-2">
             <div className="flex justify-between text-xs font-bold text-gray-700">
               <span>Simular Peso Manual en Gramos:</span>
-              <span className="text-[#9f3023]">{customWeightGrams} gramos</span>
+              <span className="text-[#7a0d0a]">{customWeightGrams} gramos</span>
             </div>
             <input
               type="range"
@@ -207,7 +207,7 @@ export const GrameraModal: React.FC = () => {
               step="5"
               value={customWeightGrams}
               onChange={e => setCustomWeightGrams(Number(e.target.value))}
-              className="w-full accent-[#9f3023]"
+              className="w-full accent-[#7a0d0a]"
             />
           </div>
 
@@ -216,7 +216,7 @@ export const GrameraModal: React.FC = () => {
             <button
               type="button"
               onClick={() => setCustomWeightGrams(Math.floor(80 + Math.random() * 800))}
-              className="py-3 px-4 rounded-xl border border-[#dfbfba] text-xs font-bold text-[#131d21] hover:bg-gray-100 flex items-center justify-center gap-1.5"
+              className="py-3 px-4 rounded-xl border border-[#ddc9a3] text-xs font-bold text-[#2a1a12] hover:bg-gray-100 flex items-center justify-center gap-1.5"
             >
               <RefreshCw className="w-4 h-4" />
               Simular Otra Báscula
@@ -225,7 +225,7 @@ export const GrameraModal: React.FC = () => {
             <button
               type="button"
               onClick={handleConfirmWeight}
-              className="py-3 px-4 rounded-xl bg-[#9f3023] hover:bg-[#881f14] text-white text-xs font-bold shadow-md flex items-center justify-center gap-1.5"
+              className="py-3 px-4 rounded-xl bg-[#7a0d0a] hover:bg-[#4f0906] text-white text-xs font-bold shadow-md flex items-center justify-center gap-1.5"
             >
               <Check className="w-4 h-4" />
               Enviar a POS (${estimatedPrice.toLocaleString('es-CO')})

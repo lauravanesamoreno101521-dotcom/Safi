@@ -15,9 +15,9 @@ export const ReceiptModal: React.FC = () => {
     <div className="fixed inset-0 bg-black/70 backdrop-blur-xs flex items-center justify-center z-50 p-4 print:p-0 print:bg-white">
       <div className="bg-white rounded-3xl max-w-sm w-full shadow-2xl border border-gray-300 overflow-hidden flex flex-col print:border-none print:shadow-none print:max-w-full">
         {/* Modal Header */}
-        <div className="bg-[#9f3023] text-white p-4 flex items-center justify-between print:hidden">
+        <div className="bg-[#7a0d0a] text-white p-4 flex items-center justify-between print:hidden">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-300" />
+            <CheckCircle2 className="w-5 h-5 text-[#d4c77a]" />
             <span className="font-bold text-sm">Venta Exitosa #{lastCompletedSale.receiptNumber}</span>
           </div>
           <button
@@ -29,7 +29,7 @@ export const ReceiptModal: React.FC = () => {
         </div>
 
         {/* Thermal Ticket Format */}
-        <div className="p-6 font-mono text-xs text-[#131d21] space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="p-6 font-mono text-xs text-[#2a1a12] space-y-4 max-h-[70vh] overflow-y-auto">
           {/* Header info */}
           <div className="text-center space-y-1 pb-3 border-b border-dashed border-gray-400">
             <h2 className="text-base font-bold tracking-tight uppercase">Salsamentaría Pro</h2>
@@ -68,12 +68,12 @@ export const ReceiptModal: React.FC = () => {
             </div>
             {lastCompletedSale.items.map((item, index) => (
               <div key={index} className="space-y-0.5">
-                <div className="font-bold text-[#131d21]">{item.product.name}</div>
+                <div className="font-bold text-[#2a1a12]">{item.product.name}</div>
                 <div className="flex justify-between text-gray-600">
                   <span>
                     {item.quantity} {item.product.unit} x ${item.product.price.toLocaleString('es-CO')}
                   </span>
-                  <span className="font-bold text-[#131d21]">
+                  <span className="font-bold text-[#2a1a12]">
                     ${item.subtotal.toLocaleString('es-CO')}
                   </span>
                 </div>
@@ -91,7 +91,7 @@ export const ReceiptModal: React.FC = () => {
               <span>IVA (19%):</span>
               <span>${lastCompletedSale.tax.toLocaleString('es-CO')}</span>
             </div>
-            <div className="flex justify-between font-bold text-sm text-[#131d21] pt-1 border-t">
+            <div className="flex justify-between font-bold text-sm text-[#2a1a12] pt-1 border-t">
               <span>TOTAL A PAGAR:</span>
               <span>${lastCompletedSale.total.toLocaleString('es-CO')} COP</span>
             </div>
@@ -130,7 +130,7 @@ export const ReceiptModal: React.FC = () => {
           <button
             type="button"
             onClick={handlePrint}
-            className="flex-1 py-3 bg-[#9f3023] hover:bg-[#881f14] text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            className="flex-1 py-3 bg-[#7a0d0a] hover:bg-[#4f0906] text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             Imprimir Ticket
@@ -138,7 +138,7 @@ export const ReceiptModal: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsReceiptModalOpen(false)}
-            className="px-5 py-3 bg-gray-200 hover:bg-gray-300 text-[#131d21] font-bold rounded-xl text-sm transition-colors cursor-pointer"
+            className="px-5 py-3 bg-gray-200 hover:bg-gray-300 text-[#2a1a12] font-bold rounded-xl text-sm transition-colors cursor-pointer"
           >
             Cerrar
           </button>
