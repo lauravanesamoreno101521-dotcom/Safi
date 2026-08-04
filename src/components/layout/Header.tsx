@@ -87,7 +87,7 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="flex justify-between items-center w-full px-3 md:px-8 h-16 bg-white border-b border-[#ddc9a3] z-50 shrink-0 shadow-xs">
+    <header className="grid grid-cols-[auto_1fr_auto] items-center w-full px-3 md:px-8 h-16 bg-white border-b border-[#ddc9a3] z-50 shrink-0 shadow-xs gap-2">
       <div className="flex items-center gap-2 sm:gap-6 shrink-0">
         <h1
           onClick={() => setActiveTab('pos')}
@@ -112,46 +112,10 @@ export const Header: React.FC = () => {
             </>
           )}
         </h1>
-
-        {/* Horizontal Navigation inside top bar (as shown in Punto de Venta screenshot) */}
-        <div className="hidden md:flex gap-1">
-          <nav className="flex gap-2">
-            <button
-              onClick={() => setActiveTab('pos')}
-              className={`font-medium text-sm px-3 py-2 rounded-lg transition-colors cursor-pointer ${
-                activeTab === 'pos'
-                  ? 'text-[#7a0d0a] font-bold border-b-2 border-[#7a0d0a] bg-[#f5e2da]'
-                  : 'text-[#7a6552] hover:bg-[#e6d6b8]/40'
-              }`}
-            >
-              Punto de Venta
-            </button>
-            <button
-              onClick={() => setActiveTab('inventario')}
-              className={`font-medium text-sm px-3 py-2 rounded-lg transition-colors cursor-pointer ${
-                activeTab === 'inventario'
-                  ? 'text-[#7a0d0a] font-bold border-b-2 border-[#7a0d0a] bg-[#f5e2da]'
-                  : 'text-[#7a6552] hover:bg-[#e6d6b8]/40'
-              }`}
-            >
-              Inventario
-            </button>
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`font-medium text-sm px-3 py-2 rounded-lg transition-colors cursor-pointer ${
-                activeTab === 'dashboard'
-                  ? 'text-[#7a0d0a] font-bold border-b-2 border-[#7a0d0a] bg-[#f5e2da]'
-                  : 'text-[#7a6552] hover:bg-[#e6d6b8]/40'
-              }`}
-            >
-              Dashboard
-            </button>
-          </nav>
-        </div>
       </div>
 
-      {/* Integrated Search/Barcode Field (Prominent in POS screen, compact in Dashboard) */}
-      <div className="flex-1 max-w-2xl px-3 md:px-8 relative">
+      {/* Integrated Search/Barcode Field, centrada en el header (ya no se repite la navegación, eso vive en el panel lateral) */}
+      <div className="w-full max-w-2xl mx-auto px-3 md:px-8 relative">
         <div className="relative group">
           <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#7a0d0a] pointer-events-none">
             {activeTab === 'pos' ? (
