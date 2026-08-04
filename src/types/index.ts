@@ -48,14 +48,24 @@ export interface Sale {
   cashierName: string;
 }
 
-export type GastoCategoria =
+// Categorías de SALIDA (egreso/gasto)
+export type GastoEgresoCategoria =
   | 'compra_proveedor'
   | 'servicios_publicos'
   | 'nomina'
   | 'transporte_domicilios'
   | 'arriendo'
   | 'mantenimiento'
-  | 'otro';
+  | 'otro_egreso';
+
+// Categorías de ENTRADA manual (ingreso que no es una venta de mostrador)
+export type GastoIngresoCategoria =
+  | 'abono_cliente'
+  | 'capital_socio'
+  | 'devolucion_proveedor'
+  | 'otro_ingreso';
+
+export type GastoCategoria = GastoEgresoCategoria | GastoIngresoCategoria;
 
 /**
  * Movimiento manual de caja que NO es una venta: una salida (gasto/egreso,

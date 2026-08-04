@@ -12,17 +12,43 @@ import {
 } from 'lucide-react';
 import { PeriodFilterBar, toDateInputValue } from '../shared/PeriodFilterBar';
 import { PeriodType, getPeriodRange, filterSalesInRange } from '../../lib/salesAnalytics';
-import { GastoCategoria } from '../../types';
+import { GastoCategoria, GastoEgresoCategoria, GastoIngresoCategoria } from '../../types';
 
 const CATEGORIA_LABELS: Record<GastoCategoria, string> = {
+  // Salidas (gastos)
   compra_proveedor: 'Compra a Proveedor',
   servicios_publicos: 'Servicios Públicos',
   nomina: 'Nómina',
   transporte_domicilios: 'Transporte / Domicilios',
   arriendo: 'Arriendo',
   mantenimiento: 'Mantenimiento',
-  otro: 'Otro'
+  otro_egreso: 'Otra Salida',
+  // Entradas (ingresos manuales, distintos a una venta)
+  abono_cliente: 'Abono de Cliente',
+  capital_socio: 'Capital de Socio',
+  devolucion_proveedor: 'Devolución de Proveedor',
+  otro_ingreso: 'Otra Entrada'
 };
+
+// El desplegable de categoría solo debe mostrar las que tienen sentido para
+// el tipo de movimiento elegido (una "Nómina" nunca es una entrada, un
+// "Abono de Cliente" nunca es una salida).
+const EGRESO_CATEGORIAS: GastoEgresoCategoria[] = [
+  'compra_proveedor',
+  'servicios_publicos',
+  'nomina',
+  'transporte_domicilios',
+  'arriendo',
+  'mantenimiento',
+  'otro_egreso'
+];
+
+const INGRESO_CATEGORIAS: GastoIngresoCategoria[] = [
+  'abono_cliente',
+  'capital_socio',
+  'devolucion_proveedor',
+  'otro_ingreso'
+];
 
 interface UnifiedMovement {
   id: string;
@@ -102,9 +128,18 @@ export const GastosScreen: React.FC = () => {
   const [formDescripcion, setFormDescripcion] = useState('');
   const [formMonto, setFormMonto] = useState('');
 
+  const categoriasDisponibles: GastoCategoria[] = formTipo === 'egreso' ? EGRESO_CATEGORIAS : INGRESO_CATEGORIAS;
+
+  const handleTipoChange = (tipo: 'ingreso' | 'egreso') => {
+    setFormTipo(tipo);
+    // Al cambiar el tipo, la categoría se reinicia a la primera opción
+    // válida para ese tipo (una entrada no puede quedar con "Nómina", etc.).
+    setFormCategoria(tipo === 'egreso' ? EGRESO_CATEGORIAS[0] : INGRESO_CATEGORIAS[0]);
+  };
+
   const resetForm = () => {
     setFormTipo('egreso');
-    setFormCategoria('compra_proveedor');
+    setFormCategoria(EGRESO_CATEGORIAS[0]);
     setFormDescripcion('');
     setFormMonto('');
     setIsFormOpen(false);
@@ -166,7 +201,7 @@ export const GastosScreen: React.FC = () => {
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => setFormTipo('egreso')}
+              onClick={() => handleTipoChange('egreso')}
               className={`flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
                 formTipo === 'egreso' ? 'bg-[#7a0d0a] text-white shadow-sm' : 'bg-[#f3e7d0] text-[#6b4a30]'
               }`}
@@ -176,7 +211,7 @@ export const GastosScreen: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setFormTipo('ingreso')}
+              onClick={() => handleTipoChange('ingreso')}
               className={`flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all ${
                 formTipo === 'ingreso' ? 'bg-[#3d3f10] text-white shadow-sm' : 'bg-[#f3e7d0] text-[#6b4a30]'
               }`}
@@ -188,13 +223,15 @@ export const GastosScreen: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="flex flex-col gap-1">
-              <label className="text-[11px] font-bold text-[#7a6552] uppercase">Categoría</label>
+              <label className="text-[11px] font-bold text-[#7a6552] uppercase">
+                Categoría <span className="normal-case font-medium text-gray-400">({formTipo === 'egreso' ? 'de salida' : 'de entrada'})</span>
+              </label>
               <select
                 value={formCategoria}
                 onChange={(e) => setFormCategoria(e.target.value as GastoCategoria)}
                 className="border-2 border-[#ddc9a3] rounded-xl px-3 py-2 text-sm outline-none focus:border-[#7a0d0a] cursor-pointer"
               >
-                {(Object.keys(CATEGORIA_LABELS) as GastoCategoria[]).map((cat) => (
+                {categoriasDisponibles.map((cat) => (
                   <option key={cat} value={cat}>{CATEGORIA_LABELS[cat]}</option>
                 ))}
               </select>

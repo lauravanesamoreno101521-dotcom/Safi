@@ -26,25 +26,67 @@ function sanitizePhone(phone: string): string {
   return digits;
 }
 
+const TICKET_WIDTH = 32;
+const RULE = '-'.repeat(TICKET_WIDTH);
+
+/** Alinea un monto a la derecha frente a una etiqueta, como en un ticket físico. */
+function padRow(left: string, right: string, width = TICKET_WIDTH): string {
+  const gap = Math.max(1, width - left.length - right.length);
+  return left + ' '.repeat(gap) + right;
+}
+
+function money(n: number): string {
+  return `$${n.toLocaleString('es-CO')}`;
+}
+
+/**
+ * Arma el mensaje de WhatsApp con el mismo look de una factura/ticket real
+ * (encabezado del negocio, ítems y totales alineados en columnas, método de
+ * pago) en vez de una línea de texto corrida. WhatsApp no soporta HTML,
+ * pero sí un bloque de texto monoespaciado (```) que mantiene la alineación
+ * de columnas — con eso se logra el efecto visual de "recibo".
+ */
 export function buildInvoiceWhatsAppMessage(sale: Sale): string {
   const lines: string[] = [];
-  lines.push(`*Salsamentaría Safi* — Ticket ${sale.receiptNumber}`);
-  lines.push(new Date(sale.timestamp).toLocaleString('es-CO'));
+
+  // --- Encabezado del negocio ---
+  lines.push('🧾 *SALSAMENTARÍA SAFI*');
+  lines.push('NIT: 900.812.441-8 · Régimen Común');
+  lines.push('Sede Norte · Bogotá D.C.');
+  lines.push('');
+  lines.push(`_Ticket:_ *${sale.receiptNumber}*`);
+  lines.push(`_Fecha:_ ${new Date(sale.timestamp).toLocaleString('es-CO')}`);
   if (sale.customer) {
-    lines.push(`Cliente: ${sale.customer.name}`);
+    lines.push(`_Cliente:_ ${sale.customer.name}`);
   }
   lines.push('');
+
+  // --- Cuerpo tipo ticket (monoespaciado para que los montos queden alineados) ---
+  const body: string[] = [];
   sale.items.forEach((item) => {
-    lines.push(
-      `• ${item.product.name} — ${item.quantity} ${item.product.unit} — $${item.subtotal.toLocaleString('es-CO')}`
-    );
+    body.push(item.product.name);
+    const qtyLabel = `  ${item.quantity} ${item.product.unit} x ${money(item.product.price)}`;
+    body.push(padRow(qtyLabel, money(item.subtotal)));
   });
+  body.push(RULE);
+  body.push(padRow('Subtotal:', money(sale.subtotal)));
+  body.push(padRow('IVA (19%):', money(sale.tax)));
+  body.push(RULE);
+  body.push(padRow('TOTAL:', money(sale.total)));
+
+  if (sale.paymentMethod === 'efectivo') {
+    body.push('');
+    body.push(padRow('Efectivo recibido:', money(sale.cashReceived || 0)));
+    body.push(padRow('Cambio:', money(sale.change || 0)));
+  }
+
+  lines.push('```' + body.join('\n') + '```');
   lines.push('');
-  lines.push(`Subtotal: $${sale.subtotal.toLocaleString('es-CO')}`);
-  lines.push(`IVA (19%): $${sale.tax.toLocaleString('es-CO')}`);
-  lines.push(`*Total: $${sale.total.toLocaleString('es-CO')} COP*`);
+  lines.push(`💳 Método de pago: *${sale.paymentMethod.toUpperCase()}*`);
   lines.push('');
   lines.push('¡Gracias por tu compra! 🧀🍖');
+  lines.push('_Conserva este mensaje como tu factura._');
+
   return lines.join('\n');
 }
 
