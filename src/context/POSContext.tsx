@@ -251,6 +251,10 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
 
     clearCart();
+    // El cliente asignado ya quedó guardado dentro de newSale (y por lo
+    // tanto en salesHistory, alimentando el ranking de Clientes). Se
+    // desasigna aquí para que la SIGUIENTE venta empiece limpia, sin cliente.
+    setSelectedCustomer(null);
     return newSale;
   };
 

@@ -32,7 +32,7 @@ export const ReceiptModal: React.FC = () => {
         <div className="p-6 font-mono text-xs text-[#2a1a12] space-y-4 max-h-[70vh] overflow-y-auto">
           {/* Header info */}
           <div className="text-center space-y-1 pb-3 border-b border-dashed border-gray-400">
-            <h2 className="text-base font-bold tracking-tight uppercase">Salsamentaría Pro</h2>
+            <h2 className="text-base font-bold tracking-tight uppercase">Salsamentaría Safi</h2>
             <p className="text-[11px] text-gray-600">NIT: 900.812.441-8 • Régimen Común</p>
             <p className="text-[11px] text-gray-600">Sede Norte • Bogotá D.C.</p>
             <p className="text-[11px] text-gray-600">Tel: (601) 745-9000 • POS Integrado</p>
@@ -121,7 +121,7 @@ export const ReceiptModal: React.FC = () => {
           <div className="text-center pt-1 space-y-1 text-[10px] text-gray-500">
             <p className="font-bold">¡Gracias por su compra!</p>
             <p>Conserve este ticket para cualquier cambio o reclamación.</p>
-            <p className="text-[9px]">Salsamentaría Pro ERP v2.4 • Gramera Certificada</p>
+            <p className="text-[9px]">Salsamentaría Safi ERP v2.4 • Gramera Certificada</p>
           </div>
         </div>
 
