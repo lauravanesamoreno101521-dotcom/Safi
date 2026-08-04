@@ -1,4 +1,4 @@
-import { Product, ActivityLogItem, WeeklySalesData, Customer, Sale, CartItem, PaymentMethodType } from '../types';
+import { Product, ActivityLogItem, WeeklySalesData, Customer, Sale, CartItem, PaymentMethodType, Gasto, GastoCategoria } from '../types';
 
 export const INITIAL_PRODUCTS: Product[] = [
   {
@@ -321,6 +321,75 @@ function generateMockSalesHistory(): Sale[] {
 }
 
 export const MOCK_SALES_HISTORY: Sale[] = generateMockSalesHistory();
+
+// --- Historial de gastos/salidas de caja de ejemplo (~5 meses) ---
+// Igual que con las ventas, esto es solo para que la pantalla de Gastos y
+// Caja tenga datos reales con qué trabajar desde ya. No representa gastos
+// reales del negocio todavía (eso llega cuando se conecte la info real).
+const GASTO_CATEGORIAS: { categoria: GastoCategoria; descripciones: string[]; montoMin: number; montoMax: number }[] = [
+  { categoria: 'compra_proveedor', descripciones: ['Compra de mercancía a proveedor', 'Reposición de inventario'], montoMin: 300000, montoMax: 2200000 },
+  { categoria: 'servicios_publicos', descripciones: ['Pago de energía eléctrica', 'Pago de acueducto y aseo', 'Pago de internet y telefonía'], montoMin: 80000, montoMax: 420000 },
+  { categoria: 'nomina', descripciones: ['Pago de nómina quincenal'], montoMin: 900000, montoMax: 1800000 },
+  { categoria: 'transporte_domicilios', descripciones: ['Transporte de mercancía', 'Pago de domicilios'], montoMin: 20000, montoMax: 150000 },
+  { categoria: 'arriendo', descripciones: ['Pago de arriendo del local'], montoMin: 1200000, montoMax: 1200000 },
+  { categoria: 'mantenimiento', descripciones: ['Mantenimiento de neveras y vitrinas', 'Mantenimiento de gramera'], montoMin: 50000, montoMax: 350000 }
+];
+
+function generateMockGastosHistory(): Gasto[] {
+  const rand = mulberry32(20260804);
+  const gastos: Gasto[] = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let counter = 1;
+  const daysBack = 150;
+
+  for (let d = daysBack; d >= 1; d--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - d);
+    const dayOfMonth = date.getDate();
+
+    // Arriendo el día 5, nómina los días 15 y 30 de cada mes
+    if (dayOfMonth === 5) {
+      gastos.push(makeGasto(counter++, date, rand, GASTO_CATEGORIAS[4]));
+    }
+    if (dayOfMonth === 15 || dayOfMonth === 30) {
+      gastos.push(makeGasto(counter++, date, rand, GASTO_CATEGORIAS[2]));
+    }
+
+    // Entre 0 y 2 gastos operativos adicionales por día (compras, servicios, transporte, mantenimiento)
+    const extraCount = Math.floor(rand() * 3);
+    for (let i = 0; i < extraCount; i++) {
+      const pool = [GASTO_CATEGORIAS[0], GASTO_CATEGORIAS[1], GASTO_CATEGORIAS[3], GASTO_CATEGORIAS[5]];
+      const cat = pool[Math.floor(rand() * pool.length)];
+      gastos.push(makeGasto(counter++, date, rand, cat));
+    }
+  }
+
+  return gastos.sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
+}
+
+function makeGasto(
+  id: number,
+  date: Date,
+  rand: () => number,
+  cat: { categoria: GastoCategoria; descripciones: string[]; montoMin: number; montoMax: number }
+): Gasto {
+  const fecha = new Date(date);
+  fecha.setHours(9 + Math.floor(rand() * 9), Math.floor(rand() * 60), 0, 0);
+  const monto = Math.round((cat.montoMin + rand() * (cat.montoMax - cat.montoMin)) / 1000) * 1000;
+  const descripcion = cat.descripciones[Math.floor(rand() * cat.descripciones.length)];
+  return {
+    id: `hist-gasto-${id}`,
+    fecha,
+    tipo: 'egreso',
+    categoria: cat.categoria,
+    descripcion,
+    monto
+  };
+}
+
+export const MOCK_GASTOS_HISTORY: Gasto[] = generateMockGastosHistory();
 
 export const MOCK_SUPPLIERS = [
   {

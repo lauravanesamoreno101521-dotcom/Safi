@@ -1,14 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { usePOS } from '../../context/POSContext';
-import { Printer, CheckCircle2, X, Share2 } from 'lucide-react';
+import { Printer, CheckCircle2, X, MessageCircle, FileCheck2, Loader2 } from 'lucide-react';
+import { getInvoiceWhatsAppLink } from '../../lib/whatsapp';
+import { issueElectronicInvoice, ElectronicInvoiceResult } from '../../lib/electronicInvoice';
 
 export const ReceiptModal: React.FC = () => {
   const { isReceiptModalOpen, setIsReceiptModalOpen, lastCompletedSale } = usePOS();
+  const [isIssuing, setIsIssuing] = useState(false);
+  const [invoiceResult, setInvoiceResult] = useState<ElectronicInvoiceResult | null>(null);
+  const [invoiceResultSaleId, setInvoiceResultSaleId] = useState<string | null>(null);
 
   if (!isReceiptModalOpen || !lastCompletedSale) return null;
 
+  // El resultado de la factura electrónica es por venta: si se abre el
+  // recibo de una venta distinta a la que quedó simulada, se limpia el aviso.
+  if (invoiceResultSaleId && invoiceResultSaleId !== lastCompletedSale.id && invoiceResult) {
+    setInvoiceResult(null);
+    setInvoiceResultSaleId(null);
+  }
+
   const handlePrint = () => {
     window.print();
+  };
+
+  const whatsappLink = getInvoiceWhatsAppLink(lastCompletedSale);
+
+  const handleSendWhatsApp = () => {
+    if (!whatsappLink) return;
+    window.open(whatsappLink, '_blank');
+  };
+
+  const handleIssueElectronicInvoice = async () => {
+    setIsIssuing(true);
+    const result = await issueElectronicInvoice(lastCompletedSale);
+    setInvoiceResult(result);
+    setInvoiceResultSaleId(lastCompletedSale.id);
+    setIsIssuing(false);
   };
 
   return (
@@ -125,23 +152,55 @@ export const ReceiptModal: React.FC = () => {
           </div>
         </div>
 
+        {/* Facturación electrónica DIAN (enchufe listo, simulada hasta elegir proveedor) */}
+        {invoiceResult && (
+          <div className="mx-4 mb-2 px-3 py-2 rounded-xl bg-[#f1f0dc] border border-[#d6d19a] text-[11px] text-[#4a4a1f] print:hidden">
+            <span className="font-bold">Factura electrónica simulada.</span> CUFE: {invoiceResult.cufe}
+            <br />
+            <span className="text-[10px] text-[#7a6552]">Falta conectar el proveedor DIAN real para que sea válida ante la ley.</span>
+          </div>
+        )}
+
         {/* Action Buttons */}
-        <div className="p-4 bg-gray-50 border-t flex gap-2 print:hidden">
-          <button
-            type="button"
-            onClick={handlePrint}
-            className="flex-1 py-3 bg-[#7a0d0a] hover:bg-[#4f0906] text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 transition-colors cursor-pointer"
-          >
-            <Printer className="w-4 h-4" />
-            Imprimir Ticket
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsReceiptModalOpen(false)}
-            className="px-5 py-3 bg-gray-200 hover:bg-gray-300 text-[#2a1a12] font-bold rounded-xl text-sm transition-colors cursor-pointer"
-          >
-            Cerrar
-          </button>
+        <div className="p-4 bg-gray-50 border-t flex flex-col gap-2 print:hidden">
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="flex-1 py-3 bg-[#7a0d0a] hover:bg-[#4f0906] text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <Printer className="w-4 h-4" />
+              Imprimir
+            </button>
+            <button
+              type="button"
+              onClick={handleSendWhatsApp}
+              disabled={!whatsappLink}
+              title={whatsappLink ? 'Enviar factura por WhatsApp' : 'Asigna un cliente con teléfono registrado para enviarla por WhatsApp'}
+              className="flex-1 py-3 bg-[#3d3f10] hover:brightness-110 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <MessageCircle className="w-4 h-4" />
+              WhatsApp
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={handleIssueElectronicInvoice}
+              disabled={isIssuing}
+              className="flex-1 py-2.5 bg-white border-2 border-[#ddc9a3] hover:bg-[#f5efdf] text-[#2a1a12] font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-60"
+            >
+              {isIssuing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <FileCheck2 className="w-3.5 h-3.5" />}
+              {isIssuing ? 'Emitiendo factura DIAN...' : 'Emitir Factura Electrónica (DIAN)'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsReceiptModalOpen(false)}
+              className="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-[#2a1a12] font-bold rounded-xl text-xs transition-colors cursor-pointer"
+            >
+              Cerrar
+            </button>
+          </div>
         </div>
       </div>
     </div>

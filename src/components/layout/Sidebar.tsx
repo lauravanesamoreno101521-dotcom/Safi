@@ -8,6 +8,7 @@ import {
   BarChart3,
   Users,
   Truck,
+  Wallet,
   LogOut,
   Plus,
   ChevronLeft,
@@ -39,6 +40,11 @@ export const Sidebar: React.FC = () => {
       id: 'reportes',
       label: 'Reportes',
       icon: <BarChart3 className="w-5 h-5 shrink-0" />
+    },
+    {
+      id: 'gastos',
+      label: 'Gastos y Caja',
+      icon: <Wallet className="w-5 h-5 shrink-0" />
     },
     {
       id: 'clientes',

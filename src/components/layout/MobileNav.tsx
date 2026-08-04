@@ -1,6 +1,6 @@
 import React from 'react';
 import { usePOS } from '../../context/POSContext';
-import { LayoutDashboard, Barcode, Package, BarChart3, Users, Truck } from 'lucide-react';
+import { LayoutDashboard, Barcode, Package, BarChart3, Users, Truck, Wallet } from 'lucide-react';
 import { TabType } from '../../types';
 
 export const MobileNav: React.FC = () => {
@@ -26,6 +26,11 @@ export const MobileNav: React.FC = () => {
       id: 'reportes',
       label: 'Reportes',
       icon: <BarChart3 className="w-5 h-5" />
+    },
+    {
+      id: 'gastos',
+      label: 'Gastos',
+      icon: <Wallet className="w-5 h-5" />
     },
     {
       id: 'clientes',

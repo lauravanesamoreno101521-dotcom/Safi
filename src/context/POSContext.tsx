@@ -1,20 +1,23 @@
-import React, { createContext, useContext, useState, useMemo } from 'react';
-import { 
-  Product, 
-  CartItem, 
-  PaymentMethodType, 
-  Customer, 
-  Sale, 
-  ActivityLogItem, 
-  TabType 
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import {
+  Product,
+  CartItem,
+  PaymentMethodType,
+  Customer,
+  Sale,
+  ActivityLogItem,
+  TabType,
+  Gasto
 } from '../types';
 import {
   INITIAL_PRODUCTS,
   MOCK_CUSTOMERS,
   MOCK_ACTIVITY_LOGS,
   MOCK_WEEKLY_SALES,
-  MOCK_SALES_HISTORY
+  MOCK_SALES_HISTORY,
+  MOCK_GASTOS_HISTORY
 } from '../data/mockData';
+import { getPendingSales, queueSaleForSync, syncPendingSales } from '../lib/offlineSync';
 
 interface POSContextType {
   activeTab: TabType;
@@ -43,6 +46,13 @@ interface POSContextType {
   activityLogs: ActivityLogItem[];
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  // Gastos / Caja (entradas y salidas manuales, distintas de las ventas)
+  gastos: Gasto[];
+  addGasto: (gasto: Omit<Gasto, 'id' | 'fecha'>) => void;
+  // Conectividad y sincronización offline
+  isOnline: boolean;
+  pendingSyncCount: number;
+  syncNow: () => void;
   // Gramera status & Modal
   grameraStatus: 'connected' | 'receiving' | 'disconnected';
   triggerGrameraReading: () => void;
@@ -94,7 +104,44 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [salesHistory, setSalesHistory] = useState<Sale[]>(MOCK_SALES_HISTORY);
   const [activityLogs, setActivityLogs] = useState<ActivityLogItem[]>(MOCK_ACTIVITY_LOGS);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  
+  const [gastos, setGastos] = useState<Gasto[]>(MOCK_GASTOS_HISTORY);
+
+  // Conectividad: detecta si hay internet para poder guardar las ventas
+  // localmente mientras no lo haya, y sincronizarlas automáticamente en
+  // cuanto vuelva la señal (ver src/lib/offlineSync.ts).
+  const [isOnline, setIsOnline] = useState<boolean>(
+    typeof navigator === 'undefined' ? true : navigator.onLine
+  );
+  const [pendingSyncCount, setPendingSyncCount] = useState<number>(
+    () => getPendingSales().length
+  );
+
+  const runSync = () => {
+    syncPendingSales().then((count) => {
+      if (count > 0) {
+        setPendingSyncCount(0);
+      }
+    });
+  };
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      // Al volver la conexión, se sincroniza automáticamente sin que nadie
+      // tenga que hacer nada, para no perder trazabilidad de las ventas
+      // que se guardaron localmente mientras no había internet.
+      runSync();
+    };
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   // Gramera
   const [grameraStatus, setGrameraStatus] = useState<'connected' | 'receiving' | 'disconnected'>('connected');
   const [weighingProduct, setWeighingProduct] = useState<Product | null>(null);
@@ -225,6 +272,14 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setLastCompletedSale(newSale);
     setIsReceiptModalOpen(true);
 
+    // Si no hay internet en el momento de la venta, se guarda localmente
+    // (localStorage) para no perder trazabilidad, y se sincroniza sola en
+    // cuanto vuelva la conexión (ver listener 'online' arriba).
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      queueSaleForSync(newSale);
+      setPendingSyncCount(prev => prev + 1);
+    }
+
     // Add to recent activity log for Dashboard
     const firstItem = cart[0];
     if (firstItem) {
@@ -279,6 +334,19 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const addGasto = (gasto: Omit<Gasto, 'id' | 'fecha'>) => {
+    const newGasto: Gasto = {
+      ...gasto,
+      id: `gasto-${Date.now()}`,
+      fecha: new Date()
+    };
+    setGastos(prev => [newGasto, ...prev]);
+  };
+
+  const syncNow = () => {
+    runSync();
+  };
+
   const addProduct = (newProd: Product) => {
     setProducts(prev => [newProd, ...prev]);
   };
@@ -316,6 +384,11 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         activityLogs,
         searchQuery,
         setSearchQuery,
+        gastos,
+        addGasto,
+        isOnline,
+        pendingSyncCount,
+        syncNow,
         grameraStatus,
         triggerGrameraReading,
         weighingProduct,

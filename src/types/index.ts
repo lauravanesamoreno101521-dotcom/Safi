@@ -1,4 +1,4 @@
-export type TabType = 'dashboard' | 'pos' | 'inventario' | 'reportes' | 'clientes' | 'proveedores';
+export type TabType = 'dashboard' | 'pos' | 'inventario' | 'reportes' | 'gastos' | 'clientes' | 'proveedores';
 
 export type PricingUnit = 'kg' | 'unid' | 'gramo';
 
@@ -46,6 +46,31 @@ export interface Sale {
   change?: number;
   customer?: Customer;
   cashierName: string;
+}
+
+export type GastoCategoria =
+  | 'compra_proveedor'
+  | 'servicios_publicos'
+  | 'nomina'
+  | 'transporte_domicilios'
+  | 'arriendo'
+  | 'mantenimiento'
+  | 'otro';
+
+/**
+ * Movimiento manual de caja que NO es una venta: una salida (gasto/egreso,
+ * ej. pago a proveedor, servicios, nómina) o un ingreso manual (ej. un abono
+ * o un ingreso distinto a una venta de mostrador). Junto con las ventas
+ * (que ya son "entradas" por naturaleza), alimenta la pantalla de Gastos y
+ * Caja para tener un balance de entradas y salidas coherente.
+ */
+export interface Gasto {
+  id: string;
+  fecha: Date;
+  tipo: 'ingreso' | 'egreso';
+  categoria: GastoCategoria;
+  descripcion: string;
+  monto: number;
 }
 
 export interface ActivityLogItem {
