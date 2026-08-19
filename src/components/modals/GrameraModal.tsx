@@ -104,7 +104,7 @@ export const GrameraModal: React.FC = () => {
             <img
               src={weighingProduct.imageUrl}
               alt={weighingProduct.name}
-              className="w-14 h-14 rounded-xl object-cover"
+              className="w-14 h-14 rounded-xl object-contain bg-white border border-gray-200 p-1"
             />
             <div>
               <p className="font-bold text-[#2a1a12]">{weighingProduct.name}</p>

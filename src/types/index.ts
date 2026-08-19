@@ -6,7 +6,7 @@ export interface Product {
   id: string;
   code: string;
   name: string;
-  category: 'jamones_embutidos' | 'quesos' | 'panaderia_gourmet' | 'vinos_licores' | 'abarrotes' | 'huevos_lacteos';
+  category: 'jamones_embutidos' | 'quesos' | 'panaderia_gourmet' | 'vinos_licores' | 'abarrotes' | 'huevos_lacteos' | 'bebidas' | 'desechables';
   price: number; // Precio por kg o unidad según unit
   unit: PricingUnit;
   stock: number; // En kg o unidades

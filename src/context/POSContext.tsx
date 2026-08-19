@@ -78,27 +78,12 @@ const POSContext = createContext<POSContextType | undefined>(undefined);
 export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeTab, setActiveTab] = useState<TabType>('pos'); // Muestra por defecto Punto de Venta como la pantalla de inicio principal, o se puede alternar con Dashboard
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
-  const [cart, setCart] = useState<CartItem[]>([
-    // Valores iniciales idénticos a los de la captura de pantalla: Jamón Serrano 0.345kg, Queso Campesino 2 uds, Salame Milano 0.150kg -> Subtotal $42,000, IVA $3,225, Total $45,225
-    {
-      product: INITIAL_PRODUCTS[0], // Jamón Serrano ($45,000/Kg)
-      quantity: 0.345,
-      subtotal: 15525
-    },
-    {
-      product: INITIAL_PRODUCTS[1], // Queso Campesino ($12,000/Unid)
-      quantity: 2,
-      subtotal: 24000
-    },
-    {
-      product: INITIAL_PRODUCTS[2], // Salame Milano ($38,000/Kg)
-      quantity: 0.150,
-      subtotal: 5700
-    }
-  ]);
+  // El carrito arranca vacío: ya se está probando con el inventario real,
+  // así que no tiene sentido precargar un carrito de demostración.
+  const [cart, setCart] = useState<CartItem[]>([]);
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('efectivo');
-  const [cashReceived, setCashReceived] = useState<number>(50000);
+  const [cashReceived, setCashReceived] = useState<number>(0);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
   const [salesHistory, setSalesHistory] = useState<Sale[]>(MOCK_SALES_HISTORY);

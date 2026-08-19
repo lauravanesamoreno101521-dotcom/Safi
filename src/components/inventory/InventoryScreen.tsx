@@ -23,10 +23,13 @@ export const InventoryScreen: React.FC = () => {
   const categories = [
     { id: 'all', name: 'Todos los Productos' },
     { id: 'jamones_embutidos', name: 'Jamones y Embutidos' },
-    { id: 'quesos', name: 'Quesos Artesanales' },
-    { id: 'panaderia_gourmet', name: 'Panadería Gourmet' },
-    { id: 'vinos_licores', name: 'Vinos y Licores' },
-    { id: 'huevos_lacteos', name: 'Huevos y Lácteos' }
+    { id: 'quesos', name: 'Quesos' },
+    { id: 'panaderia_gourmet', name: 'Panadería' },
+    { id: 'vinos_licores', name: 'Bebidas con Alcohol' },
+    { id: 'huevos_lacteos', name: 'Huevos y Lácteos' },
+    { id: 'bebidas', name: 'Bebidas sin Alcohol' },
+    { id: 'abarrotes', name: 'Abarrotes y Dulces' },
+    { id: 'desechables', name: 'Desechables' }
   ];
 
   const filteredProducts = products.filter(p => {
@@ -123,11 +126,11 @@ export const InventoryScreen: React.FC = () => {
               }`}
             >
               {/* Product Image */}
-              <div className="h-44 bg-[#efe1c4] relative overflow-hidden group">
+              <div className="h-44 bg-white relative overflow-hidden group">
                 <img
                   src={p.imageUrl}
                   alt={p.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-300"
                 />
                 <span className="absolute top-3 left-3 px-2.5 py-1 bg-black/70 backdrop-blur-xs text-white text-[10px] font-mono rounded-lg font-bold">
                   {p.code}

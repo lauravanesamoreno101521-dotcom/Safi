@@ -52,7 +52,7 @@ export function buildInvoiceWhatsAppMessage(sale: Sale): string {
   // --- Encabezado del negocio ---
   lines.push('🧾 *SALSAMENTARÍA SAFI*');
   lines.push('NIT: 900.812.441-8 · Régimen Común');
-  lines.push('Sede Norte · Bogotá D.C.');
+  lines.push('Bucaramanga, Santander');
   lines.push('');
   lines.push(`_Ticket:_ *${sale.receiptNumber}*`);
   lines.push(`_Fecha:_ ${new Date(sale.timestamp).toLocaleString('es-CO')}`);
@@ -93,6 +93,15 @@ export function buildInvoiceWhatsAppMessage(sale: Sale): string {
 /** Mensaje corto para alertas de descuentos/promociones (mismo enlace 1 a 1). */
 export function buildPromoWhatsAppMessage(customerName: string, promoText: string): string {
   return `Hola ${customerName} 👋, desde *Salsamentaría Safi* tenemos una promoción para ti:\n\n${promoText}\n\n¡Te esperamos!`;
+}
+
+/** Texto corto que acompaña la imagen de la factura cuando se envía como foto por WhatsApp. */
+export function buildInvoiceShareCaption(sale: Sale): string {
+  return [
+    `🧾 Factura ${sale.receiptNumber} — Salsamentaría Safi`,
+    `Total: $${sale.total.toLocaleString('es-CO')} COP`,
+    '¡Gracias por tu compra! 🧀🍖'
+  ].join('\n');
 }
 
 /** Devuelve null si el cliente no tiene teléfono registrado (no hay a quién enviarle). */

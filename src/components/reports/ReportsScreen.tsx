@@ -14,7 +14,7 @@ import {
 import { MOCK_WEEKLY_SALES } from '../../data/mockData';
 import { exportConsolidatedSalesCsv } from '../../lib/exportCsv';
 import { PeriodFilterBar, toDateInputValue } from '../shared/PeriodFilterBar';
-import { PeriodType, getPeriodRange, filterSalesInRange } from '../../lib/salesAnalytics';
+import { PeriodType, getPeriodRange, filterSalesInRange, computeTopProducts } from '../../lib/salesAnalytics';
 
 const formatShortDate = (d: Date) =>
   d.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -49,6 +49,8 @@ export const ReportsScreen: React.FC = () => {
   );
 
   const periodRangeLabel = `${formatShortDate(periodRange.start)} — ${formatShortDate(new Date(periodRange.end.getTime() - 1))}`;
+
+  const topProduct = useMemo(() => computeTopProducts(periodSales, 1)[0], [periodSales]);
 
   return (
     <div className="flex-1 p-6 lg:p-8 flex flex-col gap-6 overflow-y-auto bg-[#faf3e6]">
@@ -134,15 +136,17 @@ export const ReportsScreen: React.FC = () => {
 
         <div className="bg-white p-6 rounded-2xl border border-[#ddc9a3] shadow-xs">
           <span className="text-xs font-bold text-[#7a6552] uppercase">
-            Producto Líder en Peso
+            Producto Líder del Período
           </span>
           <div className="flex items-baseline justify-between mt-2">
-            <span className="text-xl font-bold text-[#2a1a12]">
-              Jamón Serrano Premium
+            <span className="text-xl font-bold text-[#2a1a12] truncate">
+              {topProduct ? topProduct.name : 'Sin ventas aún'}
             </span>
           </div>
           <p className="text-xs text-[#7a0d0a] font-bold mt-1">
-            18.4 Kg vendidos en 7 días
+            {topProduct
+              ? `${topProduct.quantity.toLocaleString('es-CO')} ${topProduct.unit} vendidos en el período`
+              : 'No hay datos en el período seleccionado'}
           </p>
         </div>
       </div>

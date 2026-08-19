@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { usePOS } from '../../context/POSContext';
 import { Printer, CheckCircle2, X, MessageCircle, FileCheck2, Loader2 } from 'lucide-react';
-import { getInvoiceWhatsAppLink } from '../../lib/whatsapp';
+import { getInvoiceWhatsAppLink, buildInvoiceShareCaption } from '../../lib/whatsapp';
 import { issueElectronicInvoice, ElectronicInvoiceResult } from '../../lib/electronicInvoice';
 
 export const ReceiptModal: React.FC = () => {
@@ -9,6 +9,9 @@ export const ReceiptModal: React.FC = () => {
   const [isIssuing, setIsIssuing] = useState(false);
   const [invoiceResult, setInvoiceResult] = useState<ElectronicInvoiceResult | null>(null);
   const [invoiceResultSaleId, setInvoiceResultSaleId] = useState<string | null>(null);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [imageFallbackNotice, setImageFallbackNotice] = useState(false);
+  const ticketRef = useRef<HTMLDivElement>(null);
 
   if (!isReceiptModalOpen || !lastCompletedSale) return null;
 
@@ -25,9 +28,83 @@ export const ReceiptModal: React.FC = () => {
 
   const whatsappLink = getInvoiceWhatsAppLink(lastCompletedSale);
 
-  const handleSendWhatsApp = () => {
-    if (!whatsappLink) return;
-    window.open(whatsappLink, '_blank');
+  /**
+   * Envía la factura por WhatsApp tal como se ve en pantalla (imagen tipo
+   * ticket), no como texto plano: se renderiza el recibo a una imagen PNG
+   * con html2canvas y se comparte con la Web Share API (nativa en celulares
+   * con WhatsApp instalado) para que llegue como una foto adjunta real.
+   *
+   * Limitación real: WhatsApp Click-to-Chat (wa.me) no permite adjuntar
+   * archivos por enlace, solo texto — eso requeriría la API oficial de
+   * WhatsApp Business. Por eso en computadores (donde no existe "compartir
+   * archivo" del sistema) se descarga la imagen de la factura y se abre el
+   * chat de WhatsApp para adjuntarla manualmente con un clic.
+   */
+  const handleSendWhatsApp = async () => {
+    const node = ticketRef.current;
+    if (!node) {
+      if (whatsappLink) window.open(whatsappLink, '_blank');
+      return;
+    }
+
+    setIsGeneratingImage(true);
+    setImageFallbackNotice(false);
+
+    // Se quita temporalmente el recorte con scroll para que la imagen
+    // capture el recibo completo, no solo la parte visible.
+    const prevMaxHeight = node.style.maxHeight;
+    const prevOverflowY = node.style.overflowY;
+    node.style.maxHeight = 'none';
+    node.style.overflowY = 'visible';
+
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(node, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true
+      });
+
+      const blob: Blob | null = await new Promise((resolve) =>
+        canvas.toBlob((b) => resolve(b), 'image/png')
+      );
+      if (!blob) throw new Error('No se pudo generar la imagen de la factura.');
+
+      const fileName = `factura-${lastCompletedSale.receiptNumber}.png`;
+      const file = new File([blob], fileName, { type: 'image/png' });
+      const caption = buildInvoiceShareCaption(lastCompletedSale);
+
+      const nav = navigator as Navigator & { canShare?: (data?: ShareData) => boolean };
+      if (nav.canShare && nav.canShare({ files: [file] }) && navigator.share) {
+        await navigator.share({
+          files: [file],
+          title: `Factura ${lastCompletedSale.receiptNumber}`,
+          text: caption
+        });
+      } else {
+        // Escritorio: no hay share sheet nativo con archivos, así que se
+        // descarga la imagen y se abre el chat con el texto ya redactado.
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        if (whatsappLink) window.open(whatsappLink, '_blank');
+        setImageFallbackNotice(true);
+      }
+    } catch (err) {
+      // Si algo falla generando la imagen, no se deja a la cajera sin poder
+      // enviar nada: se cae al enlace de texto de siempre.
+      console.error('No se pudo generar la imagen de la factura para WhatsApp:', err);
+      if (whatsappLink) window.open(whatsappLink, '_blank');
+    } finally {
+      node.style.maxHeight = prevMaxHeight;
+      node.style.overflowY = prevOverflowY;
+      setIsGeneratingImage(false);
+    }
   };
 
   const handleIssueElectronicInvoice = async () => {
@@ -56,12 +133,15 @@ export const ReceiptModal: React.FC = () => {
         </div>
 
         {/* Thermal Ticket Format */}
-        <div className="p-6 font-mono text-xs text-[#2a1a12] space-y-4 max-h-[70vh] overflow-y-auto">
+        <div
+          ref={ticketRef}
+          className="p-6 font-mono text-xs text-[#2a1a12] space-y-4 max-h-[70vh] overflow-y-auto bg-white"
+        >
           {/* Header info */}
           <div className="text-center space-y-1 pb-3 border-b border-dashed border-gray-400">
             <h2 className="text-base font-bold tracking-tight uppercase">Salsamentaría Safi</h2>
             <p className="text-[11px] text-gray-600">NIT: 900.812.441-8 • Régimen Común</p>
-            <p className="text-[11px] text-gray-600">Sede Norte • Bogotá D.C.</p>
+            <p className="text-[11px] text-gray-600">Bucaramanga, Santander</p>
             <p className="text-[11px] text-gray-600">Tel: (601) 745-9000 • POS Integrado</p>
           </div>
 
@@ -152,6 +232,12 @@ export const ReceiptModal: React.FC = () => {
           </div>
         </div>
 
+        {imageFallbackNotice && (
+          <div className="mx-4 mb-2 px-3 py-2 rounded-xl bg-[#e3f0e3] border border-[#a8cfa8] text-[11px] text-[#1f4a1f] print:hidden">
+            <span className="font-bold">Imagen de la factura descargada.</span> Se abrió WhatsApp: adjunta la imagen descargada en el chat con el botón de clip 📎.
+          </div>
+        )}
+
         {/* Facturación electrónica DIAN (enchufe listo, simulada hasta elegir proveedor) */}
         {invoiceResult && (
           <div className="mx-4 mb-2 px-3 py-2 rounded-xl bg-[#f1f0dc] border border-[#d6d19a] text-[11px] text-[#4a4a1f] print:hidden">
@@ -175,12 +261,16 @@ export const ReceiptModal: React.FC = () => {
             <button
               type="button"
               onClick={handleSendWhatsApp}
-              disabled={!whatsappLink}
+              disabled={!whatsappLink || isGeneratingImage}
               title={whatsappLink ? 'Enviar factura por WhatsApp' : 'Asigna un cliente con teléfono registrado para enviarla por WhatsApp'}
               className="flex-1 py-3 bg-[#3d3f10] hover:brightness-110 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <MessageCircle className="w-4 h-4" />
-              WhatsApp
+              {isGeneratingImage ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <MessageCircle className="w-4 h-4" />
+              )}
+              {isGeneratingImage ? 'Generando factura...' : 'WhatsApp'}
             </button>
           </div>
           <div className="flex gap-2">

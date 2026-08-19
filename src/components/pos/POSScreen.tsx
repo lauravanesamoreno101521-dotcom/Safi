@@ -1,29 +1,43 @@
 import React from 'react';
 import { usePOS } from '../../context/POSContext';
-import { 
-  ShoppingCart, 
-  Trash2, 
-  UserPlus, 
-  Minus, 
-  Plus, 
-  Printer, 
-  Pause, 
-  FileText, 
-  CheckCircle2, 
-  CreditCard, 
-  QrCode, 
-  Banknote, 
-  Scale, 
-  Sparkles, 
+import {
+  ShoppingCart,
+  Trash2,
+  UserPlus,
+  Minus,
+  Plus,
+  Printer,
+  Pause,
+  FileText,
+  CheckCircle2,
+  CreditCard,
+  QrCode,
+  Banknote,
+  Scale,
+  Sparkles,
   ChevronRight,
   Egg,
   Wine,
   Utensils,
   Sandwich,
-  Fish,
-  Edit3
+  Croissant,
+  GlassWater,
+  Cookie,
+  Package
 } from 'lucide-react';
 import { Product } from '../../types';
+
+// Un ícono representativo por categoría para la barra de Favoritos Rápidos.
+const CATEGORY_ICON: Record<Product['category'], React.ReactNode> = {
+  jamones_embutidos: <Sandwich className="w-7 h-7 text-[#7a0d0a]" />,
+  quesos: <Utensils className="w-7 h-7 text-[#7a0d0a]" />,
+  panaderia_gourmet: <Croissant className="w-7 h-7 text-[#7a0d0a]" />,
+  vinos_licores: <Wine className="w-7 h-7 text-[#7a0d0a]" />,
+  huevos_lacteos: <Egg className="w-7 h-7 text-[#7a0d0a]" />,
+  bebidas: <GlassWater className="w-7 h-7 text-[#7a0d0a]" />,
+  abarrotes: <Cookie className="w-7 h-7 text-[#7a0d0a]" />,
+  desechables: <Package className="w-7 h-7 text-[#7a0d0a]" />
+};
 
 export const POSScreen: React.FC = () => {
   const {
@@ -49,52 +63,9 @@ export const POSScreen: React.FC = () => {
     openGrameraForProduct
   } = usePOS();
 
-  // Favorite cards matching the 6 items in the screenshot bento
-  const favoriteItems: { id: string; name: string; code: string; icon: React.ReactNode }[] = [
-    {
-      id: 'fav-1',
-      name: 'Queso Campesino',
-      code: 'QC-1105',
-      icon: <Edit3 className="w-7 h-7 text-[#7a0d0a]" />
-    },
-    {
-      id: 'fav-2',
-      name: 'Jamón Serrano',
-      code: 'JS-4022',
-      icon: <Sandwich className="w-7 h-7 text-[#7a0d0a]" />
-    },
-    {
-      id: 'fav-3',
-      name: 'Salame Milano',
-      code: 'SM-9901',
-      icon: <Utensils className="w-7 h-7 text-[#7a0d0a]" />
-    },
-    {
-      id: 'fav-4',
-      name: 'Pan Artesanal',
-      code: 'PA-5503',
-      icon: <Sandwich className="w-7 h-7 text-[#7a0d0a]" />
-    },
-    {
-      id: 'fav-5',
-      name: 'Vino Tinto',
-      code: 'VT-8802',
-      icon: <Wine className="w-7 h-7 text-[#7a0d0a]" />
-    },
-    {
-      id: 'fav-6',
-      name: 'Huevos AA',
-      code: 'HU-2201',
-      icon: <Egg className="w-7 h-7 text-[#7a0d0a]" />
-    }
-  ];
-
-  const handleSelectFavorite = (code: string) => {
-    const found = products.find(p => p.code === code);
-    if (found) {
-      addToCart(found);
-    }
-  };
+  // Favoritos Rápidos: se toman en vivo de los productos marcados como
+  // favoritos en Inventario (product.isFavorite), en vez de una lista fija.
+  const favoriteProducts = products.filter(p => p.isFavorite).slice(0, 10);
 
   const totalItemsCount = cart.reduce((acc, item) => {
     return acc + (item.product.unit === 'unid' ? item.quantity : 1);
@@ -115,23 +86,26 @@ export const POSScreen: React.FC = () => {
             </span>
           </div>
           <div className="flex gap-4 pb-1">
-            {favoriteItems.map((fav) => {
-              const prod = products.find(p => p.code === fav.code);
-              return (
-                <button
-                  key={fav.id}
-                  onClick={() => handleSelectFavorite(fav.code)}
-                  className="flex flex-col items-center justify-center gap-2 p-3 bg-[#efe1c4] hover:bg-[#a83a2c] hover:text-white transition-all rounded-xl min-w-[100px] group border border-transparent hover:border-[#7a0d0a] cursor-pointer shadow-xs active:scale-95"
-                >
-                  <span className="group-hover:scale-110 transition-transform">
-                    {fav.icon}
-                  </span>
-                  <span className="text-xs font-bold text-center leading-tight">
-                    {fav.name}
-                  </span>
-                </button>
-              );
-            })}
+            {favoriteProducts.length === 0 && (
+              <p className="text-xs text-gray-400 py-3">
+                Marca productos como favoritos desde Inventario para verlos aquí.
+              </p>
+            )}
+            {favoriteProducts.map((prod) => (
+              <button
+                key={prod.id}
+                onClick={() => (prod.isWeightBased ? openGrameraForProduct(prod) : addToCart(prod))}
+                title={prod.name}
+                className="flex flex-col items-center justify-center gap-2 p-3 bg-[#efe1c4] hover:bg-[#a83a2c] hover:text-white transition-all rounded-xl min-w-[100px] group border border-transparent hover:border-[#7a0d0a] cursor-pointer shadow-xs active:scale-95"
+              >
+                <span className="group-hover:scale-110 transition-transform">
+                  {CATEGORY_ICON[prod.category]}
+                </span>
+                <span className="text-xs font-bold text-center leading-tight line-clamp-2">
+                  {prod.name}
+                </span>
+              </button>
+            ))}
           </div>
         </section>
 
@@ -188,11 +162,11 @@ export const POSScreen: React.FC = () => {
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-xl bg-[#efe1c4] overflow-hidden shrink-0 border border-gray-200">
+                            <div className="w-12 h-12 rounded-xl bg-white overflow-hidden shrink-0 border border-gray-200">
                               <img
                                 src={item.product.imageUrl}
                                 alt={item.product.name}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-contain p-1"
                               />
                             </div>
                             <div>
@@ -420,8 +394,23 @@ export const POSScreen: React.FC = () => {
                 </span>
                 <input
                   type="number"
-                  value={cashReceived}
-                  onChange={(e) => setCashReceived(Number(e.target.value))}
+                  min={0}
+                  inputMode="numeric"
+                  placeholder="0"
+                  // Se muestra vacío en vez de "0" para que la cajera pueda
+                  // escribir el monto directo sin tener que borrar el cero
+                  // inicial primero (antes quedaba "0304" o forzaba a
+                  // corregir un número raro como "-304").
+                  value={cashReceived === 0 ? '' : cashReceived}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    if (raw === '') {
+                      setCashReceived(0);
+                      return;
+                    }
+                    const parsed = Number(raw);
+                    setCashReceived(Number.isNaN(parsed) ? 0 : Math.max(0, parsed));
+                  }}
                   className="w-full bg-[#f3e7d0] border-2 border-[#ddc9a3] rounded-xl py-3 pl-8 pr-4 focus:ring-2 focus:ring-[#7a0d0a] focus:border-[#7a0d0a] focus:bg-white font-bold text-lg text-[#2a1a12] outline-none"
                 />
               </div>

@@ -197,7 +197,7 @@ export const Header: React.FC = () => {
                     <img
                       src={p.imageUrl}
                       alt={p.name}
-                      className="w-10 h-10 rounded-lg object-cover bg-gray-100 shrink-0"
+                      className="w-10 h-10 rounded-lg object-contain bg-white border border-gray-200 p-0.5 shrink-0"
                     />
                     <div>
                       <p className="text-sm font-bold text-[#2a1a12]">{p.name}</p>
